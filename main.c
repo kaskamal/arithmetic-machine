@@ -88,8 +88,7 @@ int run(VM* vm){
             PUSH(vm, 2.0);
             break;
         case DCONST:        // reads next 8 bytes of opcode as a double, and stores it on the stack.
-            // TODO: implement this.
-            // HINT: use memcpy to read next 8 bytes of code as a double. make sure you consider endianness.
+                            // reads next 8 bytes assuming big endian.
             memcpy(&b, &vm->code[vm->pc], sizeof(double));
             vm->pc += sizeof(double);
             PUSH(vm, b);
@@ -206,20 +205,6 @@ int main(void) {
     VM* vm4 = newVM(bytecode4);
     run(vm4);
     delVM(vm4);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	return exit_status;
 };
