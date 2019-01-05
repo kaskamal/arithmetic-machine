@@ -76,20 +76,23 @@ int run(VM* vm){
         case HALT: return EXIT_SUCCESS;  // exit successfully
         case NOP: break;    // pass
         case DCONST_M1:     // push -1.0 onto stack
-            // TODO: implement this.
+            PUSH(vm, -1.0);
             break;
         case DCONST_0:      // push 0.0 onto stack
-            // TODO: implement this.
+            PUSH(vm, 0.0);
             break;
         case DCONST_1:      // push 1.0 onto stack
-            // TODO: implement this.
+            PUSH(vm, 1.0);
             break;
         case DCONST_2:      // push 2.0 onto stack
-            // TODO: implement this.
+            PUSH(vm, 2.0);
             break;
         case DCONST:        // reads next 8 bytes of opcode as a double, and stores it on the stack.
             // TODO: implement this.
             // HINT: use memcpy to read next 8 bytes of code as a double. make sure you consider endianness.
+            memcpy(&b, &vm->code[vm->pc], sizeof(double));
+            vm->pc += sizeof(double);
+            PUSH(vm, b);
             break;
         case ADD:           // add two doubles from top of stack and push result back onto stack
             b = POP(vm);
@@ -97,34 +100,45 @@ int run(VM* vm){
             PUSH(vm, a + b);
             break;
         case MUL:           // multiply two doubles from top of stack and push result back onto stack
-            // TODO: implement this.
+            b = POP(vm);
+            a = POP(vm);
+            PUSH(vm, a * b);
             break;
         case SUB:           // subtract two doubles from top of stack and push result back onto stack
-            // TODO: implement this.
+            b = POP(vm);
+            a = POP(vm);
+            PUSH(vm, a - b);
             break;
         case DIV:          // divide two doubles from top of stack and push result back onto stack
-            //TODO: implement this.
-            // HINT: make sure to deal with the division by zero case.
+            b = POP(vm);
+            a = POP(vm);
+            if (!b) {
+                printf("DividingByZeroError %x\n", opcode); // termininate program at unknown opcode due to dividing by zero
+                return EXIT_FAILURE;
+            }
+            PUSH(vm, a / b);
             break;
         case NEG:                         // negates top of stack
-            //TODO: implement this.
+            b = POP(vm);
+            PUSH(vm, -b);
             break;
         case LD1:          // put value from r1 on top of stack
-            // TODO: implement this.
+            PUSH(vm, vm->r1);
             break;
         case ST1:                         // store top of stack in r1
-            // TODO: implement this.
+            b = POP(vm);
+            vm->r1 = b;
             break;
         case LD2:           // put value from r2 on top of stack
-            // TODO: implement this.
-            // HINT: should be similar to LD1.
+            PUSH(vm, vm->r2);
             break;
         case ST2:                         // store top of stack in r2
-            // TODO: implement this.
-            // HINT: should be similar to ST1.
+            b = POP(vm);
+            vm->r2 = b;
             break;
         case PRINT:                       // print top of stack, (and discard value afterwards.)
-            // TODO: implement this.
+            a = POP(vm);
+            printf("%lf\n", a);
             break;
         default:
             printf("InvalidOpcodeError: %x\n", opcode);  // terminate program at unknown opcode and show error.
@@ -148,5 +162,64 @@ int main(void) {
 	VM* vm = newVM(bytecode /* program to execute */ );
 	int exit_status = run(vm);
 	delVM(vm);
+
+    //  Additional examples
+    char bytecode2[] = { DCONST,
+        0x3F,
+        0xF0,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        PRINT,
+        HALT };
+    VM* vm2 = newVM(bytecode2);
+    run(vm2);
+    delVM(vm2);
+
+
+    char bytecode3[] = { DCONST,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0xF0,
+        0x3F,
+        PRINT,
+        HALT };
+    VM* vm3 = newVM(bytecode3);
+    run(vm3);
+    delVM(vm);
+
+
+    char bytecode4[] = { DCONST_2,
+        ST1,
+        DCONST_M1,
+        LD1,
+        DIV,
+        PRINT,
+        HALT };
+    VM* vm4 = newVM(bytecode4);
+    run(vm4);
+    delVM(vm4);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	return exit_status;
 };
